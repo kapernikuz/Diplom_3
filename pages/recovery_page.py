@@ -1,4 +1,3 @@
-from selenium.webdriver.support import expected_conditions as EC
 from pages.base_page import BasePage
 from locators.recovery_page_locators import RecoveryPageLocators
 
@@ -21,15 +20,18 @@ class RecoveryPage(BasePage):
 
     def click_show_password(self):
         """Кликает на иконку «глазик» через JS, чтобы обойти перекрытия"""
-        element = self.wait.until(
-            EC.presence_of_element_located(RecoveryPageLocators.SHOW_PASSWORD_BUTTON)
-        )
-        self.driver.execute_script("arguments[0].click();", element)
+        self.click_element_js(RecoveryPageLocators.SHOW_PASSWORD_BUTTON)
 
     def is_password_field_active(self):
-        """Проверяет, что пароль стал видимым (тип поля изменился на text)"""
+        """
+        Проверяет, что пароль стал видимым (тип поля изменился на text).
+        Использует WebDriverWait, чтобы дождаться обновления DOM без time.sleep().
+        """
         try:
-            password_input = self.find_element(RecoveryPageLocators.NEW_PASSWORD_INPUT)
-            return password_input.get_attribute("type") == "text"
+            return self.wait.until(
+                lambda d: self.find_element(
+                    RecoveryPageLocators.NEW_PASSWORD_INPUT
+                ).get_attribute("type") == "text"
+            )
         except Exception:
             return False
